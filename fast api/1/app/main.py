@@ -8,7 +8,10 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
 import sys
+from . import models
+from .database import engine
 
+models.Base.metadata.create_all(bind=engine)
 # 2. FIXED: Added Session import from sqlalchemy
 from sqlalchemy.orm import Session
 
