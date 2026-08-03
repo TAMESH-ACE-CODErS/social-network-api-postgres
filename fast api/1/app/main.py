@@ -10,7 +10,7 @@ import time
 import sys
 
 from sqlalchemy.orm import Session
-from . import models
+from . import models,schemas
 from .database import engine, SessionLocal
 
 app = FastAPI()
@@ -63,7 +63,7 @@ def get_posts(db: Session = Depends(get_db)):
     return {'data': posts}
 
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
-def create_posts(post: Post, db: Session = Depends(get_db)):
+def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     # cursor.execute(
     #     """INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""",
     #     (post.title, post.content, post.published)
@@ -112,7 +112,7 @@ def delete_post(id: int,db: Session = Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @app.put("/posts/{id}")
-def update_post(id: int, updated_post: Post,db: Session = Depends(get_db)):
+def update_post(id: int, updated_post: schemas.PostCreate,db: Session = Depends(get_db)):
     # cursor.execute(
     #     """UPDATE posts SET title=%s, content=%s, published=%s WHERE id=%s RETURNING *""", 
     #     (post.title, post.content, post.published, str(id))
@@ -131,11 +131,11 @@ def update_post(id: int, updated_post: Post,db: Session = Depends(get_db)):
     return {'data': post_query.first()}
 
 # 4. FIXED: Kept Sanjeev's real SQLAlchemy test route here at the bottom
-@app.get("/sqlalchemy")
-def test_posts(db: Session = Depends(get_db)):
-    # this is gonna grab every row in the posts table
-    posts = db.query(models.Post).all() 
+# @app.get("/sqlalchemy")
+# def test_posts(db: Session = Depends(get_db)):
+#     # this is gonna grab every row in the posts table
+#     posts = db.query(models.Post).all() 
     
-    # (Sanjeev just wrote "SELECT * FROM posts" here so you remember what ORM is doing under the hood!)
-    print(posts)
-    return {"data": posts}
+#     # (Sanjeev just wrote "SELECT * FROM posts" here so you remember what ORM is doing under the hood!)
+#     print(posts)
+#     return {"data": posts}
