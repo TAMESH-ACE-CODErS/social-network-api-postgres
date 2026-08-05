@@ -13,7 +13,12 @@ class Post(Base):
     created_at=Column(TIMESTAMP(timezone=True),nullable=False,server_default=text('now()'))
 #PGsql AND THIS CODE works differently meaning it would look for "post" table only if it is not found it would create meaning if one table is there it won't alter it (drop the table again and again tand run this code and save)
     
-
-
+class User(Base):
+    
+    __tablename__="users"
+    id = Column(Integer,primary_key=True,nullable=False)
+    email=Column(String,nullable=False,unique=True)
+    password=Column(String, nullable=False,)
+    created_at=Column(TIMESTAMP(timezone=True),nullable=False,server_default=text('now()'))
 
 

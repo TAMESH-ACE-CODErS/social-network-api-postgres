@@ -2,7 +2,7 @@
 from fastapi import FastAPI, Response, status, HTTPException, Depends
 from fastapi.params import Body
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional,List
 from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -55,14 +55,14 @@ my_posts = [
 async def root():
     return {'message': 'hello world123'}
 
-@app.get('/posts')
+@app.get('/posts',response_model=List[schemas.Post])
 def get_posts(db: Session = Depends(get_db)):
     # cursor.execute("""SELECT * FROM posts""")
     # posts = cursor.fetchall()
     posts=db.query(models.Post).all()
     return {'data': posts}
 
-@app.post('/posts', status_code=status.HTTP_201_CREATED)
+@app.post('/posts', status_code=status.HTTP_201_CREATED,response_model=schemas.Post)
 def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     # cursor.execute(
     #     """INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""",
@@ -139,3 +139,11 @@ def update_post(id: int, updated_post: schemas.PostCreate,db: Session = Depends(
 #     # (Sanjeev just wrote "SELECT * FROM posts" here so you remember what ORM is doing under the hood!)
 #     print(posts)
 #     return {"data": posts}
+
+@app.post("/users",status_code=status.HTTP_201_CREATED,response_model=schemas.Post)
+def create_user(user:schemas.UserCreate,db:Session=Depends(get_db)):
+    new_user=models.User(**user.dict())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
