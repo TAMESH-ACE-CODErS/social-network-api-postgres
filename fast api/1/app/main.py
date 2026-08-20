@@ -98,3 +98,5 @@ def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends
     db.commit()
     return post_query.first()
 
+app.include_router(post.router)
+app.include_router(user.router)

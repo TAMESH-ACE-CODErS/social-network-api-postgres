@@ -1,18 +1,20 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends
+from fastapi import FastAPI, Response, status, HTTPException, Depends ,APIRouter
 from typing import List
 import psycopg2,time 
 from psycopg2.extras import RealDictCursor
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from . import models, schemas,utils
-from .database import engine, SessionLocal 
+from .. import models, schemas,utils
+from ..database import engine, SessionLocal 
 
 # Create all tables in the database (if they don't exist)
 models.Base.metadata.create_all(bind=engine)
 
 pwd_context=CryptContext(schemes=['bcrypt'],deprecated="auto") #use of hashing 
 
-router = FastAPI()
+router =APIRouter(
+    prefix="/posts" , 
+)
 
 # Dependency to get the database session
 def get_db():
@@ -43,7 +45,7 @@ except Exception as error:
 async def root():
     return {'message': 'hello world123'}
 
-@router.get('/posts', response_model=List[schemas.Post])
+@router.get('/', response_model=List[schemas.Post])
 def get_posts(db: Session = Depends(get_db)):
     posts = db.query(models.Post).all()
     return posts
@@ -56,7 +58,7 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     db.refresh(new_post)
     return new_post
 
-@router.get("/posts/{id}", response_model=schemas.Post)
+@router.get("/{id}", response_model=schemas.Post)
 def get_post(id: int, db: Session = Depends(get_db)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     
@@ -67,7 +69,7 @@ def get_post(id: int, db: Session = Depends(get_db)):
         ) 
     return post
 
-@router.delete('/posts/{id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: Session = Depends(get_db)):
     post_query = db.query(models.Post).filter(models.Post.id == id)
     post = post_query.first()
@@ -82,7 +84,7 @@ def delete_post(id: int, db: Session = Depends(get_db)):
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@router.put("/posts/{id}", response_model=schemas.Post)
+@router.put("/{id}", response_model=schemas.Post)
 def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends(get_db)):
     post_query = db.query(models.Post).filter(models.Post.id == id)
     post = post_query.first()
@@ -97,3 +99,6 @@ def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends
     db.commit()
     return post_query.first()
 
+
+# app.include_router(post.router)
+# app.include_router(user.router)
