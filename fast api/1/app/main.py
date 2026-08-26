@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from . import models, schemas,utils
 from .database import engine, SessionLocal 
-from .routers import post,user  
+from .routers import post,user  ,auth
 
 # Create all tables in the database (if they don't exist)
 models.Base.metadata.create_all(bind=engine)
@@ -100,3 +100,4 @@ def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends
 
 app.include_router(post.router)
 app.include_router(user.router)
+app.include_router(auth.router)
