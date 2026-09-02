@@ -4,7 +4,7 @@ import psycopg2,time
 from psycopg2.extras import RealDictCursor
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from .. import models, schemas,utils
+from .. import models, schemas,utils,oauth2
 from ..database import engine, SessionLocal 
 
 # Create all tables in the database (if they don't exist)
@@ -99,6 +99,11 @@ def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends
     db.commit()
     return post_query.first()
 
-
+@router.post("/",status_code=status.HTTP_201_CREATED,response_model=schemas.Post)
+def create_posts(post:schemas.PostCreate,db:Session=Depends(get_db),user_id:int=Depends(oauth2.get_current_user)):
+    new_post=models.Post(**post.dict())
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
 # app.include_router(post.router)
 # app.include_router(user.router)

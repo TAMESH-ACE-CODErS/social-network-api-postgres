@@ -40,9 +40,9 @@ except Exception as error:
     print(error)
 
 
-@app.get('/')
-async def root():
-    return {'message': 'hello world123'}
+# @app.get()
+# async def root():
+#     return {'message': 'hello world123'}
 
 @app.get('/posts', response_model=List[schemas.Post])
 def get_posts(db: Session = Depends(get_db)):
