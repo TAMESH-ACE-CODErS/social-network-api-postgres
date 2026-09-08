@@ -1,62 +1,22 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends ,APIRouter
+from fastapi import Response, status, HTTPException, Depends, APIRouter
 from typing import List
-import psycopg2,time 
-from psycopg2.extras import RealDictCursor
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from .. import models, schemas,utils,oauth2
-from ..database import engine, SessionLocal 
 
-# Create all tables in the database (if they don't exist)
-models.Base.metadata.create_all(bind=engine)
+from .. import models, schemas
+from ..database import get_db
 
-pwd_context=CryptContext(schemes=['bcrypt'],deprecated="auto") #use of hashing 
-
-router =APIRouter(
-    prefix="/posts" , 
+router = APIRouter(
+    prefix="/posts",
+    tags=['Posts'] 
 )
 
-# Dependency to get the database session
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-# Keep your raw psycopg2 connection here just for the print statement if you want, 
-# but SQLAlchemy handles all the actual work now!
-try: 
-    connect = psycopg2.connect(
-        host='localhost', 
-        database='fastapi',
-        user='postgres', 
-        password='password123',
-        cursor_factory=RealDictCursor
-    )
-    cursor = connect.cursor()
-    print("Raw psycopg2 connection was successful!")
-except Exception as error:
-    print("Connection to database failed. Error was:")
-    print(error)
-
-
-@router.get('/')
-async def root():
-    return {'message': 'hello world123'}
-
+# FIX: Removed the duplicate root ('/') route from this file
 @router.get('/', response_model=List[schemas.Post])
 def get_posts(db: Session = Depends(get_db)):
     posts = db.query(models.Post).all()
     return posts
 
-@router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
-def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
-    new_post = models.Post(title=post.title, content=post.content, published=post.published)
-    db.add(new_post)
-    db.commit()
-    db.refresh(new_post)
-    return new_post
+# Removed the duplicate unauthenticated create_posts route that was here!
 
 @router.get("/{id}", response_model=schemas.Post)
 def get_post(id: int, db: Session = Depends(get_db)):
@@ -99,11 +59,13 @@ def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends
     db.commit()
     return post_query.first()
 
-@router.post("/",status_code=status.HTTP_201_CREATED,response_model=schemas.Post)
-def create_posts(post:schemas.PostCreate,db:Session=Depends(get_db),user_id:int=Depends(oauth2.get_current_user)):
-    new_post=models.Post(**post.dict())
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
+def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
+    new_post = models.Post(**post.dict())
+    print(user_id)
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
-# app.include_router(post.router)
-# app.include_router(user.router)
+    
+    # THE FIX: We must return the post so Pydantic can validate and send it!
+    return new_post

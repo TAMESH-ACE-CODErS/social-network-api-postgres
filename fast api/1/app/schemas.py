@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
+
 # --- POST SCHEMAS ---
 
 class PostBase(BaseModel):
@@ -16,7 +17,8 @@ class Post(PostBase):
     created_at: datetime
     
     class Config:
-        orm_mode = True
+        # THE FIX 2: Silences the Pydantic V2 Warning!
+        from_attributes = True
 
 # --- USER SCHEMAS ---
 
@@ -31,16 +33,18 @@ class UserOut(BaseModel):
     created_at: datetime
     
     class Config:
-        orm_mode = True
+        # THE FIX 2: Silences the Pydantic V2 Warning!
+        from_attributes = True
         
 class UserLogin(BaseModel):
-    email:EmailStr
-    password:str
+    email: EmailStr
+    password: str
+    
+# --- AUTHENTICATION SCHEMAS ---
     
 class Token(BaseModel):
-    access_token:str
-    token_type:str
+    access_token: str
+    token_type: str
     
 class TokenData(BaseModel):
-    id:Optional[str]
-    
+    id: Optional[str]
