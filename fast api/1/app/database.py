@@ -1,16 +1,19 @@
-from fastapi import FastAPI
-from . import models
-from .database import engine
-from .routers import post, user, auth
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-models.Base.metadata.create_all(bind=engine)
+# Ensure this URL matches your local PostgreSQL credentials[cite: 1]
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:password123@localhost/fastapi"
 
-app = FastAPI()
+engine = create_engine(SQLALCHEMY_DATABASE_URL)[cite: 1]
 
-app.include_router(post.router)
-app.include_router(user.router)
-app.include_router(auth.router)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)[cite: 1]
 
-@app.get('/')
-def root():
-    return {'message': 'Welcome to the FastAPI Application!'}
+Base = declarative_base()[cite: 1]
+
+def get_db():
+    db = SessionLocal()[cite: 1]
+    try:
+        yield db[cite: 1]
+    finally:
+        db.close()[cite: 1]
