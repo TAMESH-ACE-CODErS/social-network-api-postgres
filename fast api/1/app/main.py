@@ -2,6 +2,10 @@ from fastapi import FastAPI
 from . import models
 from .database import engine
 from .routers import post, user, auth
+from pydantic import BaseModel,BaseSettings
+class Settings(BaseSettings):
+    database_password:str= "localhost"
+    
 
 models.Base.metadata.create_all(bind=engine)
 
