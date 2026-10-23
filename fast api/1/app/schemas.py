@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
 from datetime import datetime
 from typing import Optional
-
+from pydantic.types import conint
 # --- USER SCHEMAS ---
 
 class UserCreate(BaseModel):
@@ -47,3 +47,7 @@ class Token(BaseModel):
     
 class TokenData(BaseModel):
     id: Optional[str] = None
+    
+class Vote(BaseModel):
+    post_id:int
+    dir:conint(le=1) #le means less than equal to
